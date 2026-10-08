@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Perfume Access</title>
+<style>
+:root{--bg:#f7f5f1;--card:#fff;--ink:#181818;--muted:#777;--line:#e7e2da;--accent:#171717;--soft:#efebe5}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+button,input{font:inherit}.app{max-width:1100px;margin:auto;min-height:100vh}.top{padding:18px 20px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.9);position:sticky;top:0;z-index:5}
+.brand{font-weight:800;font-size:20px}.tag{font-size:12px;color:var(--muted);margin-top:3px}
+.hero{padding:48px 20px 28px}.hero h1{font-size:clamp(34px,7vw,62px);line-height:.98;margin:0 0 14px;max-width:720px;letter-spacing:-2px}.hero p{color:var(--muted);font-size:16px;max-width:620px}
+.search{display:flex;gap:8px;margin-top:24px}.search input{flex:1;padding:15px 16px;border:1px solid var(--line);border-radius:12px;background:white}.btn{border:0;border-radius:11px;padding:12px 16px;background:var(--accent);color:#fff;cursor:pointer}.btn.secondary{background:var(--soft);color:var(--ink)}
+.section{padding:18px 20px}.section h2{font-size:21px;margin:0 0 14px}.section h2+.sub{margin-top:-10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.sub{font-size:13px;color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden;cursor:pointer}.pic{height:190px;background:#eee8df;display:grid;place-items:center;color:#999;font-size:13px}.cardbody{padding:14px}.name{font-weight:750}.brand2,.meta{font-size:12px;color:var(--muted);margin-top:4px}.price{font-weight:750;margin-top:12px}.tiny{font-size:11px;color:var(--muted)}
+.badge{display:inline-block;font-size:11px;padding:5px 8px;border-radius:999px;background:var(--soft);margin-top:8px}.badge.live{background:#e4f0e6;color:#1f5a2c}
+.bar{height:6px;background:var(--soft);border-radius:999px;overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.feed{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden}.feeditem{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 16px;border-bottom:1px solid var(--line);font-size:14px}.feeditem:last-child{border:0}.feeditem .when{color:var(--muted);font-size:12px;white-space:nowrap}
+.noresults{display:none;padding:10px 20px 30px;color:var(--muted);font-size:14px}
+.admin{display:none;margin:10px 20px 40px;padding:16px;background:#fff;border:1px dashed var(--line);border-radius:14px}.admin h2{font-size:17px;margin:0 0 4px}.admin table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}.admin th,.admin td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}.admin td.c,.admin th.c{text-align:center}.status{display:inline-block;padding:4px 7px;border-radius:999px;background:var(--soft);font-size:11px}.status.pending{background:#fff1d8}.status.confirmed{background:#e4f0e6;color:#1f5a2c}.admin-actions{display:flex;gap:6px;flex-wrap:wrap}.admin-actions .btn{padding:7px 9px;font-size:12px}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.pic{height:160px}}
+@media(max-width:480px){.hero{padding-top:34px}.grid{gap:10px}.pic{height:150px}.search{flex-direction:column}.admin{overflow-x:auto}}
+.detail{display:none;padding:24px 20px 50px}.back{margin-bottom:18px}.detailgrid{display:grid;grid-template-columns:1fr 1fr;gap:26px}.detailpic{min-height:390px;background:#eee8df;border-radius:18px;display:grid;place-items:center;color:#999}.detail h1{font-size:42px;line-height:1;margin:0}.community{font-size:28px;font-weight:800;margin-top:22px}.perml{font-size:13px;color:var(--muted)}.action{margin-top:18px;width:100%}.drop{display:none;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:#fff;overflow:hidden}.size{padding:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;cursor:pointer}.size:last-child{border:0}.panel{margin-top:22px;padding:16px;background:#fff;border:1px solid var(--line);border-radius:14px}.form{display:none;margin-top:12px}.form input,.form textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;margin:5px 0 8px}.form textarea{min-height:84px;resize:vertical}.note{font-size:12px;color:var(--muted);line-height:1.5}
+@media(max-width:700px){.detailgrid{grid-template-columns:1fr}.detailpic{min-height:280px}.detail h1{font-size:34px}}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#171717;color:#fff;padding:12px 16px;border-radius:10px;display:none;font-size:13px;z-index:9}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand">Perfume Access</div><div class="tag">Access the fragrance in the quantity you actually want.</div></header>
+
+<main id="home">
+<section class="hero">
+<h1>What do you want to smell?</h1>
+<p>We turn individual fragrance curiosity into collective purchasing power.</p>
+<div class="search"><input id="search" placeholder="Search a fragrance or brand…" oninput="render()"><button class="btn" onclick="requestFragrance()">Request fragrance</button></div>
+</section>
+
+<section class="section" id="platformSec"><h2>Platform Picks</h2><p class="sub">Available now for instant decant purchase.</p><div class="grid" id="platform"></div></section>
+<section class="section" id="almostSec"><h2>Almost Unlocked</h2><p class="sub">Community-funded fragrances gathering demand.</p><div class="grid" id="almost"></div></section>
+<section class="section" id="requestedSec"><h2>Recently Requested</h2><p class="sub">Recently approved fragrances waiting for community demand.</p><div class="grid" id="requested"></div></section>
+<div class="noresults" id="noResults">No fragrance matches your search. Use “Request fragrance” to ask for it.</div>
+<section class="section" id="purchasesSec"><h2>Completed Purchases</h2><p class="sub">Recent purchases from the community.</p><div class="feed" id="purchases"></div></section>
+
+<!-- Admin category control (prototype). Open the page with #admin on the end of the URL. -->
+<section class="admin" id="adminPanel"><h2>Admin: homepage categories</h2><div class="note">Admin decides eligibility. The algorithm decides order. A fragrance only appears in a category if its flag is ON and its funding mode fits that category.</div><div id="adminTable"></div>
+<h2 style="margin-top:18px">Admin: community bookings</h2>
+<div class="note">A booking only affects the public commitment bar after you verify it.</div>
+<div id="adminBookings"></div>
+<h2 style="margin-top:18px">Admin: platform purchase requests</h2>
+<div class="note">Address is collected for fulfilment. Confirm only after the customer has submitted “I've Paid”.</div>
+<div id="adminOrders"></div>
+<h2 style="margin-top:18px">Admin: interest comments</h2><div class="note">Why people are not ready to commit yet.</div><div id="adminInterests"></div></section>
+</main>
+
+<section class="detail" id="detail"></section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const MIN=60000,HR=3600000,DAY=86400000,NOW=Date.now();
+
+/* Sample data. Category membership comes from each fragrance's admin flags, not from this code. */
+const perfumes=[
+{name:"Bois Imperial",brand:"Essential Parfums",mode:"Community Funded",size:100,source:190000,community:200000,committed:76,interested:147,bought:38,sizes:[1,2,5,10],approvedAt:NOW-60*DAY,admin:{platformPicks:false,almostUnlocked:true,recentlyRequested:false}},
+{name:"Liquid Brun",brand:"French Avenue",mode:"Platform Funded",inStock:true,size:100,source:70000,community:80000,interested:91,bought:42,sizes:[1,2,5,10],approvedAt:NOW-90*DAY,admin:{platformPicks:true,almostUnlocked:false,recentlyRequested:false}},
+{name:"Hacivat",brand:"Nishane",mode:"Community Funded",size:50,source:370000,community:385000,committed:31,interested:112,bought:25,sizes:[1,2,5],approvedAt:NOW-45*DAY,admin:{platformPicks:false,almostUnlocked:true,recentlyRequested:false}},
+{name:"Sauvage Elixir",brand:"Dior",mode:"Platform Funded",inStock:true,size:60,source:491780,community:505000,interested:88,bought:51,sizes:[1,2,5,10],approvedAt:NOW-80*DAY,admin:{platformPicks:true,almostUnlocked:false,recentlyRequested:false}},
+{name:"Bleu de Chanel",brand:"Chanel",mode:"Community Funded",size:100,source:345000,community:360000,committed:64,interested:102,bought:35,sizes:[1,2,5,10],approvedAt:NOW-70*DAY,admin:{platformPicks:false,almostUnlocked:true,recentlyRequested:false}},
+{name:"Oud for Greatness",brand:"Initio",mode:"Community Funded",size:90,source:420000,community:435000,committed:53,interested:96,bought:29,sizes:[1,2,5,10],approvedAt:NOW-50*DAY,admin:{platformPicks:false,almostUnlocked:true,recentlyRequested:false}},
+{name:"Eros",brand:"Versace",mode:"Platform Funded",inStock:true,size:100,source:180000,community:190000,interested:75,bought:33,sizes:[1,2,5,10],approvedAt:NOW-100*DAY,admin:{platformPicks:true,almostUnlocked:false,recentlyRequested:false}},
+{name:"Imagination",brand:"Louis Vuitton",mode:"Community Funded",size:100,source:520000,community:535000,committed:44,interested:139,bought:21,sizes:[1,2,5,10],approvedAt:NOW-40*DAY,admin:{platformPicks:false,almostUnlocked:true,recentlyRequested:false}},
+{name:"Naxos",brand:"Xerjoff",mode:"Community Funded",size:100,source:300000,community:315000,committed:0,interested:6,bought:0,sizes:[1,2,5,10],approvedAt:NOW-2*HR,admin:{platformPicks:false,almostUnlocked:false,recentlyRequested:true}},
+{name:"Kirke",brand:"Tiziana Terenzi",mode:"Community Funded",size:100,source:240000,community:255000,committed:5,interested:14,bought:0,sizes:[1,2,5,10],approvedAt:NOW-1*DAY,admin:{platformPicks:false,almostUnlocked:false,recentlyRequested:true}}
+];
+
+/* Completed purchase records (intentionally unsorted; the feed sorts by timestamp). */
+const purchases=[
+{username:"@daniel",quantity:5,fragrance:"Liquid Brun",timestamp:NOW-1*HR},
+{username:"@tunde",quantity:1,fragrance:"Sauvage Elixir",timestamp:NOW-26*HR},
+{username:"@kyshrizla",quantity:10,fragrance:"Bois Imperial",timestamp:NOW-10*MIN},
+{username:"@amaka",quantity:2,fragrance:"Eros",timestamp:NOW-6*HR},
+{username:"@joshua",quantity:10,fragrance:"Bleu de Chanel",timestamp:NOW-3*HR},
+{username:"@mariam",quantity:2,fragrance:"Hacivat",timestamp:NOW-24*MIN}
+];
+
+let selected=null;
+const naira=n=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const isPlatform=p=>p.mode==="Platform Funded";
+const pct=p=>p.size?Math.min(100,(p.committed||0)/p.size):0;
+
+/* Admin decides eligibility (flag ON) and the funding mode must fit the category.
+   Platform Picks also needs inventory. The algorithm only decides order. */
+function eligible(p,key){
+if(!p.admin||!p.admin[key])return false;
+if(key==="platformPicks")return isPlatform(p)&&!!p.inStock;
+return !isPlatform(p);
+}
+function lastPurchase(name){return purchases.filter(x=>x.fragrance===name).reduce((m,x)=>Math.max(m,x.timestamp),0)}
+
+function card(p){
+const plat=isPlatform(p);
+const meta=plat?`${p.inStock?"Available now":"Out of stock"} · ${p.bought} bought`:`${p.committed||0}/${p.size} ml committed · ${p.interested} interested`;
+const bar=plat?"":`<div class="bar"><i style="width:${Math.round(pct(p)*100)}%"></i></div>`;
+return `<article class="card" onclick="openDetail('${p.name}')"><div class="pic">Fragrance image</div><div class="cardbody"><div class="name">${p.name}</div><div class="brand2">${p.brand}</div><span class="badge${plat&&p.inStock?" live":""}">${p.mode}</span><div class="price">${naira(p.community)} <span class="tiny">· ${naira(Math.round(p.community/p.size))}/ml</span></div>${bar}<div class="meta">${meta}</div></div></article>`
+}
+function fill(id,list){
+document.getElementById(id).innerHTML=list.map(card).join("");
+document.getElementById(id+"Sec").style.display=list.length?"":"none";
+return list.length;
+}
+function timeAgo(ts){
+const m=Math.max(0,Math.floor((Date.now()-ts)/MIN));
+if(m<1)return "just now";
+if(m<60)return m+(m===1?" min ago":" mins ago");
+const h=Math.floor(m/60);
+if(h<24)return h+(h===1?" hr ago":" hrs ago");
+const d=Math.floor(h/24);
+return d+(d===1?" day ago":" days ago");
+}
+function renderPurchases(){
+const list=[...purchases].sort((a,b)=>b.timestamp-a.timestamp);
+document.getElementById("purchases").innerHTML=list.map(x=>`<div class="feeditem"><span><b>${esc(x.username)}</b> purchased ${x.quantity} ml of ${esc(x.fragrance)}</span><span class="when">${timeAgo(x.timestamp)}</span></div>`).join("");
+document.getElementById("purchasesSec").style.display=list.length?"":"none";
+}
+function render(){
+const q=document.getElementById("search").value.toLowerCase().trim();
+const list=perfumes.filter(p=>(p.name+" "+p.brand).toLowerCase().includes(q));
+const platform=list.filter(p=>eligible(p,"platformPicks")).sort((a,b)=>(b.bought-a.bought)||(lastPurchase(b.name)-lastPurchase(a.name)));
+const almost=list.filter(p=>eligible(p,"almostUnlocked")).sort((a,b)=>pct(b)-pct(a));
+const req=list.filter(p=>eligible(p,"recentlyRequested")).sort((a,b)=>b.approvedAt-a.approvedAt);
+const total=fill("platform",platform)+fill("almost",almost)+fill("requested",req);
+document.getElementById("noResults").style.display=(q&&!total)?"block":"none";
+renderPurchases();
+renderAdmin();
+}
+
+/* Admin category control (prototype, visible only with #admin in the URL) */
+function renderAdmin(){
+const panel=document.getElementById("adminPanel");
+const on=location.hash==="#admin";
+panel.style.display=on?"block":"none";
+if(!on)return;
+const keys=[["platformPicks","Platform Picks"],["almostUnlocked","Almost Unlocked"],["recentlyRequested","Recently Requested"]];
+document.getElementById("adminBookings").innerHTML=bookings.length?`<table><tr><th>Code</th><th>Fragrance</th><th>Name</th><th>WhatsApp</th><th>ml</th><th>Status</th><th>Action</th></tr>${bookings.map((x,i)=>`<tr><td>${esc(x.code)}</td><td>${esc(x.fragrance)}</td><td>${esc(x.name||"-")}</td><td>${esc(x.contact)}</td><td>${x.qty}</td><td><span class="status ${x.status}">${x.status}</span></td><td>${x.status==="pending"?`<div class="admin-actions"><button class="btn" onclick="confirmBooking(${i})">Confirm</button><button class="btn secondary" onclick="cancelBooking(${i})">Cancel</button></div>`:`-`}</td></tr>`).join("")}</table>`:`<div class="note" style="margin-top:8px">No community bookings yet.</div>`;
+
+document.getElementById("adminOrders").innerHTML=orders.length?`<table><tr><th>Code</th><th>Fragrance</th><th>Name</th><th>WhatsApp</th><th>ml</th><th>Address</th><th>Status</th><th>Action</th></tr>${orders.map((x,i)=>`<tr><td>${esc(x.code)}</td><td>${esc(x.fragrance)}</td><td>${esc(x.name||"-")}</td><td>${esc(x.contact)}</td><td>${x.qty}</td><td>${esc(x.address||"-")}${x.city?`<br>${esc(x.city)}`:""}</td><td><span class="status ${x.status}">${x.status}</span></td><td>${x.status==="payment_submitted"?`<button class="btn" onclick="confirmOrder(${i})">Confirm payment</button>`:`-`}</td></tr>`).join("")}</table>`:`<div class="note" style="margin-top:8px">No purchase requests yet.</div>`;
+
+document.getElementById("adminInterests").innerHTML=interests.length?`<table><tr><th>Fragrance</th><th>Contact</th><th>ml</th><th>Comment</th></tr>${interests.map(x=>`<tr><td>${esc(x.fragrance)}</td><td>${esc(x.contact)}</td><td>${x.qty||"-"}</td><td>${esc(x.comment||"-")}</td></tr>`).join("")}</table>`:`<div class="note" style="margin-top:8px">No interest submitted yet.</div>`;
+document.getElementById("adminTable").innerHTML=`<table><tr><th>Fragrance</th><th>Mode</th>${keys.map(k=>`<th class="c">${k[1]}</th>`).join("")}</tr>${perfumes.map((p,i)=>`<tr><td>${p.name}</td><td>${p.mode}</td>${keys.map(k=>`<td class="c"><input type="checkbox" id="adm-${i}-${k[0]}" ${p.admin[k[0]]?"checked":""} onchange="setFlag(${i},'${k[0]}',this.checked)"></td>`).join("")}</tr>`).join("")}</table>`;
+}
+function setFlag(i,key,val){perfumes[i].admin[key]=val;render()}
+window.addEventListener("hashchange",renderAdmin);
+
+function openDetail(name){
+selected=perfumes.find(p=>p.name===name);
+const plat=isPlatform(selected);
+const need=Math.max(0,selected.size-(selected.committed||0));
+document.getElementById("home").style.display="none";
+let d=document.getElementById("detail");d.style.display="block";
+const demand=plat
+?`<div class="panel"><b>${selected.inStock?"Available now":"Out of stock"}</b><div class="meta">${selected.inStock?"The platform has this bottle. Get a decant instantly. No waiting for other buyers.":"The platform has no inventory of this bottle right now."} · ${selected.bought} bought</div></div>`
+:`<div class="panel"><b>Community demand</b><div class="bar"><i style="width:${Math.round(pct(selected)*100)}%"></i></div><div class="meta" id="demandMeta">${selected.committed||0}/${selected.size} ml committed · ${need?need+" ml needed":"Unlocked"} · ${selected.interested} interested · ${selected.bought} bought</div></div>`;
+const interest=plat?"":`<div class="panel"><b>Interest</b><div class="note">Curious but not ready to commit? Register your interest. No account or purchase obligation.</div><button class="btn secondary action" onclick="showInterest()">I'm Interested</button><div class="form" id="interestForm"><input id="iname" placeholder="Your name"><input id="contact" placeholder="WhatsApp or X username"><input id="qty" type="number" placeholder="Desired quantity (ml)"><textarea id="icomment" placeholder="Can't commit right now? Tell us why (optional). Budget, timing, anything."></textarea><button class="btn action" onclick="submitInterest()">Submit interest</button></div></div>`;
+d.innerHTML=`
+<button class="btn secondary back" onclick="goHome()">← Back</button>
+<div class="detailgrid">
+<div class="detailpic">Admin-uploaded fragrance information / notes image</div>
+<div>
+<span class="badge${plat&&selected.inStock?" live":""}">${selected.mode}${plat&&selected.inStock?" · Available now":""}</span>
+<h1>${selected.name}</h1><div class="brand2">${selected.brand}</div>
+<div class="community">${naira(selected.community)} <span class="perml">· ${naira(Math.round(selected.community/selected.size))}/ml</span></div>
+<button class="btn action" onclick="toggleDrop()">Get Decant ▾</button>
+<div class="drop" id="drop">${selected.sizes.map(s=>`<div class="size" onclick="chooseSize(${s})"><span>${s} ml</span><span>${naira(Math.round(selected.community/selected.size*s))} + ${naira(bottleCost(s))} bottle</span></div>`).join("")}</div>
+<button class="btn secondary action" onclick="buyFull()">Buy Full Bottle</button>
+${demand}
+${interest}
+</div></div>`;
+window.scrollTo(0,0);
+}
+function bottleCost(s){return s<=1?200:s<=2?300:s<=5?500:700}
+function toggleDrop(){let x=document.getElementById("drop");x.style.display=x.style.display==="block"?"none":"block"}
+function chooseSize(s){
+  if(isPlatform(selected)){
+    if(!selected.inStock){showToast("This fragrance is out of stock right now.");return}
+    showPurchaseForm(s);
+    return;
+  }
+  if((selected.committed||0)>=selected.size){
+    showPurchaseForm(s);
+    return;
+  }
+  showBookingForm(s);
+}
+
+function showPurchaseForm(s){
+  document.getElementById("detail").insertAdjacentHTML("beforeend",`
+    <div class="panel" id="purchaseFormPanel">
+      <b>Purchase request · ${s} ml</b>
+      <div class="note">Enter your fulfilment information. You will receive payment instructions and a unique request code.</div>
+      <div class="form" style="display:block">
+        <input id="pname" placeholder="Your name">
+        <input id="pcontact" placeholder="WhatsApp number">
+        <textarea id="paddress" placeholder="Delivery address"></textarea>
+        <input id="pcity" placeholder="City / State">
+        <button class="btn action" onclick="submitPurchaseRequest(${s})">Create purchase request</button>
+      </div>
+    </div>`);
+  document.getElementById("purchaseFormPanel").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function submitPurchaseRequest(s){
+  const g=id=>document.getElementById(id).value.trim();
+  const amount=Math.round(selected.community/selected.size*s)+bottleCost(s);
+  const rec={code:requestCode("PA"),fragrance:selected.name,qty:s,name:g("pname"),contact:g("pcontact"),address:g("paddress"),city:g("pcity"),amount,status:"awaiting_payment",createdAt:Date.now()};
+  if(!rec.contact||!rec.address){showToast("WhatsApp number and address are required.");return}
+  orders.push(rec);
+  renderAdmin();
+  document.getElementById("purchaseFormPanel").innerHTML=`
+    <b>Request ${rec.code} created</b>
+    <div class="note">Transfer <b>${naira(rec.amount)}</b> to the account details supplied by the platform, and put <b>${rec.code}</b> in the transfer narration/reference.</div>
+    <div class="panel" style="margin-top:12px;background:var(--soft)">
+      <b>Bank transfer</b>
+      <div class="meta">Account details can be configured by the admin.</div>
+      <div class="meta">Request code: <b>${rec.code}</b></div>
+    </div>
+    <button class="btn action" onclick="markPaid('${rec.code}')">I've Paid</button>`;
+  showToast("Request created. Complete the bank transfer, then tap I've Paid.");
+}
+
+function markPaid(code){
+  const o=orders.find(x=>x.code===code);
+  if(!o)return;
+  o.status="payment_submitted";
+  o.paidAt=Date.now();
+  renderAdmin();
+  showToast("Payment submitted for admin confirmation.");
+}
+
+function showBookingForm(s){
+  document.getElementById("detail").insertAdjacentHTML("beforeend",`
+    <div class="panel" id="bookingFormPanel">
+      <b>Book ${s} ml</b>
+      <div class="note">This is a booking, not a payment. Your booking enters the public commitment total only after admin verification.</div>
+      <div class="form" style="display:block">
+        <input id="bname" placeholder="Your name">
+        <input id="bcontact" placeholder="WhatsApp number">
+        <button class="btn action" onclick="submitBooking(${s})">Submit booking</button>
+      </div>
+    </div>`);
+  document.getElementById("bookingFormPanel").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function submitBooking(s){
+  const g=id=>document.getElementById(id).value.trim();
+  const contact=g("bcontact");
+  if(!contact){showToast("WhatsApp number is required.");return}
+  const key=normalizeContact(contact);
+  const duplicate=bookings.find(x=>normalizeContact(x.contact)===key && x.fragrance===selected.name && x.status!=="cancelled");
+  if(duplicate){showToast("A booking already exists for this WhatsApp number.");return}
+  const rec={code:requestCode("BK"),fragrance:selected.name,qty:s,name:g("bname"),contact,status:"pending",createdAt:Date.now()};
+  bookings.push(rec);
+  renderAdmin();
+  document.getElementById("bookingFormPanel").innerHTML=`
+    <b>Booking submitted</b>
+    <div class="note">Booking code: <b>${rec.code}</b><br>Your booking is awaiting admin verification. If approved, you will be contacted on WhatsApp.</div>`;
+  showToast("Booking submitted for verification.");
+}
+
+function confirmBooking(i){
+  const b=bookings[i];
+  if(!b||b.status!=="pending")return;
+  const p=perfumes.find(x=>x.name===b.fragrance);
+  if(!p)return;
+  if((p.committed||0)+b.qty>p.size){showToast("This booking would exceed the bottle size.");return}
+  b.status="confirmed"; b.confirmedAt=Date.now();
+  p.committed=(p.committed||0)+b.qty;
+  p.bookingCount=(p.bookingCount||0)+1;
+  showToast(`Booking confirmed. WhatsApp: ${whatsappMessage(b)}`);
+  render();
+}
+
+function cancelBooking(i){
+  if(!bookings[i])return;
+  bookings[i].status="cancelled";
+  renderAdmin();
+  showToast("Booking cancelled.");
+}
+
+function confirmOrder(i){
+  const o=orders[i];
+  if(!o||o.status!=="payment_submitted")return;
+  const p=perfumes.find(x=>x.name===o.fragrance);
+  if(!p)return;
+  o.status="confirmed";o.confirmedAt=Date.now();
+  p.bought=(p.bought||0)+o.qty;
+  if(isPlatform(p)&&p.inStock){
+    p.remainingMl=(p.remainingMl==null?p.size:p.remainingMl)-o.qty;
+    if(p.remainingMl<=0){p.remainingMl=0;p.inStock=false}
+  }
+  purchases.unshift({username:o.name||"Customer",quantity:o.qty,fragrance:o.fragrance,timestamp:o.confirmedAt});
+  showToast(`Payment confirmed for ${o.code}.`);
+  render();
+}
+
+function showInterest(){document.getElementById("interestForm").style.display="block"}
+const interests=[];
+const bookings=[];
+const orders=[];
+
+function requestCode(prefix){
+  return prefix+"-"+Math.random().toString(36).slice(2,6).toUpperCase()+"-"+Date.now().toString(36).slice(-3).toUpperCase();
+}
+function normalizeContact(v){return v.trim().toLowerCase().replace(/\\s+/g,"");}
+function whatsappMessage(b){
+  return `Mr/Mrs ${b.name||"Customer"}, you've successfully booked ${b.qty} ml of ${b.fragrance}. You'll be notified when sufficient interest is registered.`;
+}
+function submitInterest(){
+const g=id=>document.getElementById(id).value.trim();
+const rec={fragrance:selected.name,name:g("iname"),contact:g("contact"),qty:Number(g("qty"))||0,comment:g("icomment"),at:Date.now()};
+if(!rec.contact){showToast("Add your WhatsApp or X username so we can follow up.");return}
+const i=interests.findIndex(x=>x.fragrance===rec.fragrance&&x.contact.toLowerCase()===rec.contact.toLowerCase());
+if(i>=0){interests[i]=rec;showToast("Your interest was updated.")}
+else{interests.push(rec);selected.interested++;showToast("Interest recorded for this prototype.");const m=document.getElementById("demandMeta");if(m)m.textContent=m.textContent.replace(/\d+ interested/,selected.interested+" interested")}
+renderAdmin();
+}
+function buyFull(){
+  if(!selected){return}
+  if(isPlatform(selected)&&selected.inStock){showPurchaseForm(selected.size)}
+  else{showToast("Full-bottle purchase request would open next.")}
+}
+function requestFragrance(){showToast("Fragrance request flow would open next.");}
+function goHome(){document.getElementById("detail").style.display="none";document.getElementById("home").style.display="block";window.scrollTo(0,0)}
+function showToast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",2200)}
+render();
+</script>
+</body></html>
